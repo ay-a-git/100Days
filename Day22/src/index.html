@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>10 - Debug UI</title>
+  </head>
+
+  <video
+    id="'video"
+    playsinline
+    webkit-playsinLine
+    muted
+    loop
+    autoplay
+    width="700"
+    height="700"
+    src="./public/video.mp4"
+    style="display: none"
+  ></video>
+  <body>
+    <canvas class="webgl"></canvas>
+  </body>
+
+  <!-- <script>
+    /**
+     * video object
+     */
+    let video = document.getElementById("video");
+    let videoTexture = new THREE.VideoTexture(video);
+
+    const movieMaterial = new THREE.MeshBasicMaterial({
+      map: videoTexture,
+      //to play the footage only on the front of the cube
+      //side: THREE.FrontSide,
+      toneMapped: false,
+    });
+
+    const movieGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const movieMesh = new THREE.Mesh(movieGeometry, movieMaterial);
+    scene.add(movieMesh);
+    movieMesh.position.set(-1, -1, 0);
+  </script> -->
+</html>

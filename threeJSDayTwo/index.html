@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.5/dat.gui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.2/TweenMax.min.js"></script>
+
+    <script>
+      const scene = new THREE.Scene();
+
+      const camera = new THREE.PerspectiveCamera(
+        //field of view
+        75,
+        //apsect ratio
+        window.innerWidth / window.innerHeight,
+        //near and far plane
+        0.1,
+        1000
+      );
+      camera.position.z = 5;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setClearColor("#e5e5e5");
+
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+      document.body.appendChild(renderer.domElement);
+
+      //allows for responsiveness in the scene based on browser window size
+      window.addEventListener("resize", () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        //the aspect ratio will need readjusting as well
+        camera.aspect = window.innerWidth / window.innerHeight;
+
+        //updating the project matrix every time a change is made to window size
+        camera.updateProjectionMatrix();
+      });
+
+      var raycaster = new THREE.Raycaster();
+      var mouse = new THREE.Vector2();
+
+      /**
+       * Sphere geometry's three parameters being used here are the
+       * Radius (the size of the circle), (min 1, max 30)
+       * width Segments - how smooth the sphere will be on its x axis (min 3, max 32)
+       * height segments - how smooth the sphere will be on its y axis. (min 2, max 16)
+       * Lower values for width and height segments will make the object more jagged and squarish
+       */
+      const geometry = new THREE.SphereGeometry(1, 40, 40);
+
+      const box = new THREE.BoxGeometry(1, 1, 1);
+
+      /**
+       * Material for non-shiny surfaces w/o spectacular highlights
+       * materials similar to wood or stone
+       */
+      const material = new THREE.MeshLambertMaterial({ color: 0xffcc00 });
+
+      /**
+       * combining the structure we want with the "skin" we've designed for it
+       * in this case, our "structure" or geometry is the first parameter,
+       * and the "skin" or material is the second parameter
+       */
+      var mesh = new THREE.Mesh(geometry, material);
+      var boxMesh = new THREE.Mesh(box, material);
+
+      /**
+       * Position - the graphing coordinates of the objects in the scene
+       * positive value send the object to the right side of scene
+       * negative values send object to the left side of scene
+       */
+      mesh.position.x = 2;
+      mesh.position.y = 2;
+      mesh.position.z = 0;
+
+      /**
+       * the positions can also be written as a set of parameters through set()
+       * x,y,z
+       */
+      boxMesh.position.set(-2, 2, 0);
+
+      /**
+       * to rotate the object within the 3D space.
+       * operates on the same graphical cordinate system
+       * x,y,z
+       */
+      //boxMesh.rotation.set(45, 0, 0);
+
+      /**
+       * prior to these two commands, we made the objects but had not made them available to appear
+       * after adding an object, if you want to see it, you must render it.
+       */
+      scene.add(mesh);
+      scene.add(boxMesh);
+      /**
+       * In this project i wanted a light to be pointed from a given direction
+       * imagine a light coming from a lightbulb and reflecting off of our created structure
+       * Parameters:
+       * Color - hexidecimal integer value. Sets the color of the light. default is white
+       * Intensity - integer value. The strength of the light. Default is 1
+       * Distance - maximum range of the light. Default is 0 or no distance
+       * Decay - how much the light dims as it reaches the object. Default is 1
+       */
+      const light = new THREE.PointLight(0xffd700, 1, 500);
+      light.position.set(10, 0, 25);
+
+      //whenever we want to get our objects on screen we add it to the scene
+      scene.add(light);
+
+      /**
+       * allowing to change the browser size without distorting the objects within our scenes
+       * requestAnimationFrame - tells the browser you want an animation.
+       * Makes a call to a specific function to update an animation
+       * Imagine this render function as an infinite loop projecting the frames on screen
+       * 60 times per second
+       *
+       * This is more advantageous than using setTimeInterval because,
+       * when we hop onto another tab the animation is considered "unused" and it stops. Saving power
+       */
+      const render = function () {
+        requestAnimationFrame(render);
+
+        //the continuous looped change will make the object rotate on the x axis
+        //boxMesh.rotation.x += 0.01;
+        //boxMesh.rotation.y += 0.05;
+
+        renderer.render(scene, camera);
+      };
+
+      function onMouseMove(event) {
+        event.preventDefault();
+
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 - 1;
+
+        raycaster.setFromCamera(mouse, camera);
+
+        var intersects = raycaster.intersectObjects(scene.children, true);
+        for (var i = 0; i < intersects.length; i++) {
+          intersects[i].object.material.color.set(0xff0000);
+        }
+      }
+
+      //always render the objects after you add them to the scene
+      render();
+
+      this.tl = new TimelineMax({ paused: true });
+      //the object will stretch along its x axis
+      this.tl.to(this.boxMesh.scale, 1, { x: 2, ease: Expo.easeOut });
+      //the cube will shrink along its x axis
+      this.tl.to(this.boxMesh.scale, 0.5, { x: 0.5, ease: Expo.easeOut });
+      //the cube will move to the 0 position along its x axis
+      this.tl.to(this.boxMesh.position, 1, { x: 0, ease: Expo.easeOut });
+      //the cube will move down along its y axis
+      this.tl.to(
+        this.boxMesh.position,
+        0.5,
+        { y: Math.PI * 0.5, ease: Expo.easeOut },
+        "=-1.5"
+      );
+
+      /**
+       * upon clicking the scene where the object is held, the object will then transform
+       
+      document.body.addEventListener("click", () => {
+        this.tl.play();
+      });
+
+      */
+
+      window.addEventListener("mousemove", onMouseMove);
+    </script>
+  </body>
+</html>

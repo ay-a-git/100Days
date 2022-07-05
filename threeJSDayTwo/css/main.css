@@ -1,0 +1,11 @@
+/*
+the following is to remove scroll bars on the borders of the browser window
+*/
+body {
+  margin: 0;
+  height: 100vh;
+}
+
+canvas {
+  display: block;
+}
